@@ -216,3 +216,70 @@ public:
 
 ```
 
+### 29. 删除链表中重复的节点
+
+​	在一个排序的链表中，存在重复的节点，请删除该链表中重复的节点，重复的节点不保留。
+
+#### 数据范围
+
+链表中节点 val 值取值范围 [0,100]。
+链表长度 [0,100]。
+
+#### 样例1
+
+```bash
+输入：1->2->3->3->4->4->5
+
+输出：1->2->5
+```
+
+#### 样例2
+
+```bash
+输入：1->1->1->2->3
+
+输出：2->3
+```
+
+```c++
+// 此题没给出头结点，可以虚拟出一个头结点☆
+// 关键技巧：在头结点上构造出一个新的链表出来：新增一个遍历指针：只有当原链表的某个元素不重复才更新遍历指针的下一个结点（p->next）&&只有当扫描下一个结点没有发生重复时才更新编译指针（p）
+// 这样在构造新链表时就可以忽略重复的元素
+
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* deleteDuplication(ListNode* head) {
+        ListNode* pre = new ListNode(-1);
+        pre->next = head;
+        
+        
+        ListNode* dummy = pre;
+        while(dummy->next){
+            int v = dummy->next->val;
+            ListNode* p = dummy->next;
+            while(p->next&&p->next->val==v){
+                p=p->next;
+            }
+            // std::cout << "P:" << p->val << std::endl;
+            
+            if(dummy->next->next==p->next){
+                dummy=dummy->next;
+            }else{
+                dummy->next=p->next;
+            }
+            // std::cout << dummy->val << std::endl;
+        }
+        
+        return pre->next;
+    }
+};
+```
+
