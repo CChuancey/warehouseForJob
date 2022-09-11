@@ -10,3 +10,5 @@ add_custom_command(
           memcheck --track-origins=yes
   COMMAND cat "${CMAKE_BINARY_DIR}/Testing/Temporary/MemoryChecker.*.log"
   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
+
+set_property(TARGET testsForCode PROPERTY CXX_STANDARD 17)
