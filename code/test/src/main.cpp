@@ -1,102 +1,86 @@
 #include <iostream>
-#include <list>
 #include <memory>
 
-namespace lazy {
-// 懒汉模式，只有在需要时才创建,程序结束时无法释放
-class SingleTon {
+class Product {
 public:
-    static SingleTon* getInstance() {
-        if (!instance) {
-            instance = new SingleTon();
+    virtual void info() = 0;
+    virtual ~Product() {}
+};
+
+class TypeAProduct : public Product {
+public:
+    virtual void info() { std::cout << "TypeA product info" << std::endl; }
+};
+
+class TypeBProduct : public Product {
+public:
+    virtual void info() { std::cout << "TypeB product info" << std::endl; }
+};
+
+// 简单工厂模式，根据描述信息获得产品
+namespace simple {
+class Factory {
+public:
+    static Product* createProduct(int type) {
+        if (type == 0) {
+            return new TypeAProduct;
+        } else {
+            return new TypeBProduct;
         }
-        return instance;
     }
-    void printHello() { std::cout << "Hello lazy pattern!" << std::endl; }
+};
+};  // namespace simple
 
-private:
-    SingleTon() = default;
-    static SingleTon* instance;
+// 工厂方法类,将工厂进一步细分，每种工厂只生产某种特定的产品
+namespace factoryFunction {
+class Factory {
+public:
+    virtual Product* createProduct() = 0;
 };
 
-SingleTon* SingleTon::instance = nullptr;
-};  // namespace lazy
-
-// C++11 起的最佳写法
-namespace lazyAndThreadSafe {
-class Singleton {
+class TypeAFactory : public Factory {
 public:
-    static Singleton& getInstance() {
-        // C++11起静态局部变量线程安全
-        static Singleton instance;
-        return instance;
-    }
-
-public:
-    // 禁止拷贝和移动
-    Singleton(const Singleton&) = delete;
-    Singleton& operator=(const Singleton&) = delete;
-    Singleton(Singleton&&) = delete;
-    Singleton& operator=(Singleton&&) = delete;
-
-public:
-    void printHello() {
-        std::cout << "Hello lazyAndThreadSafe pattern!" << std::endl;
-    }
-
-private:
-    Singleton() = default;
-    ~Singleton() = default;
+    virtual Product* createProduct() override { return new TypeAProduct; }
 };
-};  // namespace lazyAndThreadSafe
 
-namespace smartpointer {
-class Singleton {
+class TypeBFactory : public Factory {
 public:
-    static Singleton& getInstance() {
-        // static unique_ptr
-        static std::unique_ptr<Singleton> instance(new Singleton);
-        return *instance;
-    }
-
-public:
-    void printHello() {
-        std::cout << "Hello smartpointer pattern!" << std::endl;
-    }
-
-public:
-    // 禁止拷贝和移动
-    Singleton(const Singleton&) = delete;
-    Singleton& operator=(const Singleton&) = delete;
-    Singleton(Singleton&&) = delete;
-    Singleton& operator=(Singleton&&) = delete;
-    // 析构函数需要public权限，供智能指针调用析构函数
-    ~Singleton() = default;
-
-private:
-    Singleton() = default;
-
-private:
-    std::shared_ptr<Singleton> instance;
+    virtual Product* createProduct() override { return new TypeBProduct; }
 };
-};  // namespace smartpointer
+};  // namespace factoryFunction
+
+namespace simpleBaseOnSmartPointer {
+class Factory {
+public:
+    static std::unique_ptr<Product> createProduct() {
+        static auto product = std::make_unique<TypeAProduct>();
+        return std::move(product);
+    }
+};
+};  // namespace simpleBaseOnSmartPointer
 
 int main() {
-    // 经典写法,存在内存泄漏
+    // 简单工厂设计模式
     {
-        auto instance = lazy::SingleTon::getInstance();
-        instance->printHello();
+        Product* product = simple::Factory::createProduct(1);
+        delete product;
     }
 
-    // C++11 起的最佳写法
+    // 工厂方法设计模式
     {
-        auto& instance = lazyAndThreadSafe::Singleton::getInstance();
-        instance.printHello();
+        auto factory = new factoryFunction::TypeAFactory();
+        auto typeAProduct = factory->createProduct();
+        delete typeAProduct;
+        delete factory;
     }
-    // 利用智能指针但仍是静态局部变量
+
+    // 使用智能指针实现的简单工厂模式
     {
-        auto& instance = smartpointer::Singleton::getInstance();
-        instance.printHello();
+        auto factory = std::make_unique<simpleBaseOnSmartPointer::Factory>();
+        auto product(factory->createProduct());
+        // convert from unique_ptr to shared_ptr
+        std::shared_ptr<Product> copied_shared_ptr(std::move(product));
     }
+
     return 0;
 }

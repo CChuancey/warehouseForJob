@@ -1,4 +1,5 @@
 #include <iostream>
+#include <memory>
 
 class Product {
 public:
@@ -48,6 +49,16 @@ public:
 };
 };  // namespace factoryFunction
 
+namespace simpleBaseOnSmartPointer {
+class Factory {
+public:
+    static std::unique_ptr<Product> createProduct() {
+        static auto product = std::make_unique<TypeAProduct>();
+        return std::move(product);
+    }
+};
+};  // namespace simpleBaseOnSmartPointer
+
 int main() {
     // 简单工厂设计模式
     {
@@ -61,6 +72,14 @@ int main() {
         auto typeAProduct = factory->createProduct();
         delete typeAProduct;
         delete factory;
+    }
+
+    // 使用智能指针实现的简单工厂模式
+    {
+        auto factory = std::make_unique<simpleBaseOnSmartPointer::Factory>();
+        auto product(factory->createProduct());
+        // convert from unique_ptr to shared_ptr
+        std::shared_ptr<Product> copied_shared_ptr(std::move(product));
     }
 
     return 0;
