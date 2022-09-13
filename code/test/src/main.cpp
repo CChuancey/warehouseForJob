@@ -1,85 +1,93 @@
 #include <iostream>
+#include <list>
 #include <memory>
 
-class Product {
+namespace observer {
+
+// 抽象观察者，动作为更新状态、做出其他动作
+class Observer {
 public:
-    virtual void info() = 0;
-    virtual ~Product() {}
+    virtual void update() = 0;
+    virtual ~Observer() {}
 };
 
-class TypeAProduct : public Product {
+class Obj {
 public:
-    virtual void info() { std::cout << "TypeA product info" << std::endl; }
-};
-
-class TypeBProduct : public Product {
-public:
-    virtual void info() { std::cout << "TypeB product info" << std::endl; }
-};
-
-// 简单工厂模式，根据描述信息获得产品
-namespace simple {
-class Factory {
-public:
-    static Product* createProduct(int type) {
-        if (type == 0) {
-            return new TypeAProduct;
-        } else {
-            return new TypeBProduct;
+    //对象在某种情况下会通知观察者
+    void notify() {
+        for (auto observer : observers) {
+            observer->update();
         }
     }
-};
-};  // namespace simple
 
-// 工厂方法类,将工厂进一步细分，每种工厂只生产某种特定的产品
-namespace factoryFunction {
-class Factory {
-public:
-    virtual Product* createProduct() = 0;
+    void attach(Observer* observer) { observers.push_back(observer); }
+    void detach(Observer* observer) { observers.remove(observer); }
+
+    ~Obj() {
+        for (auto observer : observers) {
+            delete observer;
+        }
+    }
+
+private:
+    // 对于该类对象，存在的观察者
+    std::list<Observer*> observers;
 };
 
-class TypeAFactory : public Factory {
+class TypeObserver : public Observer {
 public:
-    virtual Product* createProduct() override { return new TypeAProduct; }
-};
-
-class TypeBFactory : public Factory {
-public:
-    virtual Product* createProduct() override { return new TypeBProduct; }
-};
-};  // namespace factoryFunction
-
-namespace simpleBaseOnSmartPointer {
-class Factory {
-public:
-    static std::unique_ptr<Product> createProduct() {
-        static auto product = std::make_unique<TypeAProduct>();
-        return std::move(product);
+    virtual void update() override {
+        std::cout << "观察者A收到了信息" << std::endl;
     }
 };
-};  // namespace simpleBaseOnSmartPointer
+
+};  // namespace observer
+
+namespace smartPointer {
+// 对象中存储着观察者模式的对象指针，将其用weak_ptr代替
+class Obj {
+public:
+    //对象在某种情况下会通知观察者
+    void notify() {
+        for (auto observer : observers) {
+            // 检查指针是否有效
+            auto obs = observer.lock();
+            if (obs) {
+                obs->update();
+            }
+        }
+    }
+
+    void attach(std::shared_ptr<observer::Observer>&& observer) {
+        observers.push_back(observer);
+    }
+    // weak_ptr不存在operator==
+    // void detach(const std::shared_ptr<observer::Observer>& observer) {
+    //     std::weak_ptr<observer::Observer> wpr(observer);
+    //     observers.remove(wpr);
+    // }
+
+private:
+    std::list<std::weak_ptr<observer::Observer>> observers;
+};
+};  // namespace smartPointer
 
 int main() {
-    // 简单工厂设计模式
+    // 传统方式
     {
-        Product* product = simple::Factory::createProduct(1);
-        delete product;
+        auto obser = new observer::TypeObserver();
+        auto obj = new observer::Obj();
+        obj->attach(obser);
+        obj->notify();
+        delete obj;
     }
 
-    // 工厂方法设计模式
+    // 智能指针替换裸指针
     {
-        auto factory = new factoryFunction::TypeAFactory();
-        auto typeAProduct = factory->createProduct();
-        delete typeAProduct;
-        delete factory;
-    }
-
-    // 使用智能指针实现的简单工厂模式
-    {
-        auto factory = std::make_unique<simpleBaseOnSmartPointer::Factory>();
-        auto product(factory->createProduct());
-        // convert from unique_ptr to shared_ptr
-        std::shared_ptr<Product> copied_shared_ptr(std::move(product));
+        auto obser(std::make_shared<observer::TypeObserver>());
+        auto obj(std::make_shared<smartPointer::Obj>());
+        obj->attach(std::move(obser));
+        obj->notify();
     }
 
     return 0;
