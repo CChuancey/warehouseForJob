@@ -3,22 +3,17 @@
 class Product {
 public:
     virtual void info() = 0;
-    virtual ~Product() {
-    }
+    virtual ~Product() {}
 };
 
 class TypeAProduct : public Product {
 public:
-    virtual void info() {
-        std::cout << "TypeA product info" << std::endl;
-    }
+    virtual void info() { std::cout << "TypeA product info" << std::endl; }
 };
 
 class TypeBProduct : public Product {
 public:
-    virtual void info() {
-        std::cout << "TypeB product info" << std::endl;
-    }
+    virtual void info() { std::cout << "TypeB product info" << std::endl; }
 };
 
 // 简单工厂模式，根据描述信息获得产品
@@ -33,7 +28,7 @@ public:
         }
     }
 };
-}; // namespace simple
+};  // namespace simple
 
 // 工厂方法类,将工厂进一步细分，每种工厂只生产某种特定的产品
 namespace factoryFunction {
@@ -44,18 +39,14 @@ public:
 
 class TypeAFactory : public Factory {
 public:
-    virtual Product* createProduct() override {
-        return new TypeAProduct;
-    }
+    virtual Product* createProduct() override { return new TypeAProduct; }
 };
 
 class TypeBFactory : public Factory {
 public:
-    virtual Product* createProduct() override {
-        return new TypeBProduct;
-    }
+    virtual Product* createProduct() override { return new TypeBProduct; }
 };
-}; // namespace factoryFunction
+};  // namespace factoryFunction
 
 int main() {
     // 简单工厂设计模式

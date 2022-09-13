@@ -7,8 +7,7 @@ namespace observer {
 class Observer {
 public:
     virtual void update() = 0;
-    virtual ~Observer() {
-    }
+    virtual ~Observer() {}
 };
 
 class Obj {
@@ -20,12 +19,8 @@ public:
         }
     }
 
-    void attach(Observer* observer) {
-        observers.push_back(observer);
-    }
-    void detach(Observer* observer) {
-        observers.remove(observer);
-    }
+    void attach(Observer* observer) { observers.push_back(observer); }
+    void detach(Observer* observer) { observers.remove(observer); }
 
     ~Obj() {
         for (auto observer : observers) {
@@ -45,7 +40,7 @@ public:
     }
 };
 
-}; // namespace observer
+};  // namespace observer
 
 int main() {
     auto obser = new observer::TypeObserver();

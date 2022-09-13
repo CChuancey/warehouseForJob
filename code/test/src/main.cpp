@@ -12,9 +12,7 @@ public:
         }
         return instance;
     }
-    void printHello() {
-        std::cout << "Hello lazy pattern!" << std::endl;
-    }
+    void printHello() { std::cout << "Hello lazy pattern!" << std::endl; }
 
 private:
     SingleTon() = default;
@@ -22,7 +20,7 @@ private:
 };
 
 SingleTon* SingleTon::instance = nullptr;
-}; // namespace lazy
+};  // namespace lazy
 
 // C++11 起的最佳写法
 namespace lazyAndThreadSafe {
@@ -50,7 +48,7 @@ private:
     Singleton() = default;
     ~Singleton() = default;
 };
-}; // namespace lazyAndThreadSafe
+};  // namespace lazyAndThreadSafe
 
 namespace smartpointer {
 class Singleton {
@@ -81,7 +79,7 @@ private:
 private:
     std::shared_ptr<Singleton> instance;
 };
-}; // namespace smartpointer
+};  // namespace smartpointer
 
 int main() {
     // 经典写法,存在内存泄漏
