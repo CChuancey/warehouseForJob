@@ -7,6 +7,7 @@ class Strategy {
 public:
     virtual ~Strategy() = default;
     virtual void run() = 0;
+    // 默认构造函数也需要声明，后面用到了无参构造函数
     Strategy() = default;
     Strategy(const Strategy&) = default;
     Strategy& operator=(const Strategy&) = default;
