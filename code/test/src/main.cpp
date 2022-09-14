@@ -8,14 +8,24 @@ namespace observer {
 class Observer {
 public:
     virtual void update() = 0;
-    virtual ~Observer() {}
+    virtual ~Observer() = default;
+
+    /**
+     * @brief Construct a new Observer object
+     *
+     */
+    Observer() = default;
+    Observer(const Observer&) = default;
+    Observer& operator=(const Observer&) = default;
+    Observer(Observer&&) = default;
+    Observer& operator=(Observer&&) = default;
 };
 
 class Obj {
 public:
     //对象在某种情况下会通知观察者
     void notify() {
-        for (auto observer : observers) {
+        for (auto* observer : observers) {
             observer->update();
         }
     }
@@ -24,10 +34,17 @@ public:
     void detach(Observer* observer) { observers.remove(observer); }
 
     ~Obj() {
-        for (auto observer : observers) {
+        for (auto* observer : observers) {
+            // 这里使用裸指针演示，故不使用推荐的智能指针消除warnning
             delete observer;
         }
     }
+
+    Obj() = default;
+    Obj(const Obj&) = default;
+    Obj& operator=(const Obj&) = default;
+    Obj& operator=(Obj&&) = default;
+    Obj(Obj&&) = default;
 
 private:
     // 对于该类对象，存在的观察者
@@ -36,9 +53,7 @@ private:
 
 class TypeObserver : public Observer {
 public:
-    virtual void update() override {
-        std::cout << "观察者A收到了信息" << std::endl;
-    }
+    void update() override { std::cout << "观察者A收到了信息" << std::endl; }
 };
 
 };  // namespace observer
@@ -49,7 +64,7 @@ class Obj {
 public:
     //对象在某种情况下会通知观察者
     void notify() {
-        for (auto observer : observers) {
+        for (const auto& observer : observers) {
             // 检查指针是否有效
             auto obs = observer.lock();
             if (obs) {
@@ -75,8 +90,8 @@ private:
 int main() {
     // 传统方式
     {
-        auto obser = new observer::TypeObserver();
-        auto obj = new observer::Obj();
+        auto* obser = new observer::TypeObserver();
+        auto* obj = new observer::Obj();
         obj->attach(obser);
         obj->notify();
         delete obj;

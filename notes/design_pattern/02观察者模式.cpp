@@ -1,5 +1,6 @@
 #include <iostream>
 #include <list>
+#include <memory>
 
 namespace observer {
 
@@ -7,14 +8,24 @@ namespace observer {
 class Observer {
 public:
     virtual void update() = 0;
-    virtual ~Observer() {}
+    virtual ~Observer() = default;
+
+    /**
+     * @brief Construct a new Observer object
+     *
+     */
+    Observer() = default;
+    Observer(const Observer&) = default;
+    Observer& operator=(const Observer&) = default;
+    Observer(Observer&&) = default;
+    Observer& operator=(Observer&&) = default;
 };
 
 class Obj {
 public:
     //对象在某种情况下会通知观察者
     void notify() {
-        for (auto observer : observers) {
+        for (auto* observer : observers) {
             observer->update();
         }
     }
@@ -23,10 +34,17 @@ public:
     void detach(Observer* observer) { observers.remove(observer); }
 
     ~Obj() {
-        for (auto observer : observers) {
+        for (auto* observer : observers) {
+            // 这里使用裸指针演示，故不使用推荐的智能指针消除warnning
             delete observer;
         }
     }
+
+    Obj() = default;
+    Obj(const Obj&) = default;
+    Obj& operator=(const Obj&) = default;
+    Obj& operator=(Obj&&) = default;
+    Obj(Obj&&) = default;
 
 private:
     // 对于该类对象，存在的观察者
@@ -35,19 +53,57 @@ private:
 
 class TypeObserver : public Observer {
 public:
-    virtual void update() override {
-        std::cout << "观察者A收到了信息" << std::endl;
-    }
+    void update() override { std::cout << "观察者A收到了信息" << std::endl; }
 };
 
 };  // namespace observer
 
+namespace smartPointer {
+// 对象中存储着观察者模式的对象指针，将其用weak_ptr代替
+class Obj {
+public:
+    //对象在某种情况下会通知观察者
+    void notify() {
+        for (const auto& observer : observers) {
+            // 检查指针是否有效
+            auto obs = observer.lock();
+            if (obs) {
+                obs->update();
+            }
+        }
+    }
+
+    void attach(std::shared_ptr<observer::Observer>&& observer) {
+        observers.push_back(observer);
+    }
+    // weak_ptr不存在operator==
+    // void detach(const std::shared_ptr<observer::Observer>& observer) {
+    //     std::weak_ptr<observer::Observer> wpr(observer);
+    //     observers.remove(wpr);
+    // }
+
+private:
+    std::list<std::weak_ptr<observer::Observer>> observers;
+};
+};  // namespace smartPointer
+
 int main() {
-    auto obser = new observer::TypeObserver();
-    auto obj = new observer::Obj();
-    obj->attach(obser);
-    obj->notify();
-    delete obj;
+    // 传统方式
+    {
+        auto* obser = new observer::TypeObserver();
+        auto* obj = new observer::Obj();
+        obj->attach(obser);
+        obj->notify();
+        delete obj;
+    }
+
+    // 智能指针替换裸指针
+    {
+        auto obser(std::make_shared<observer::TypeObserver>());
+        auto obj(std::make_shared<smartPointer::Obj>());
+        obj->attach(std::move(obser));
+        obj->notify();
+    }
 
     return 0;
 }
