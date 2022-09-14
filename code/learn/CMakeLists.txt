@@ -1,8 +1,3 @@
-set(MEMORYCHECK_COMMAND_OPTIONS "--trace-children=yes --leak-check=full")
-
-include(CTest)
-find_program(MEMORYCHECK_COMMAND valgrind)
-
 add_executable(helloworld src/helloworld.cpp)
 target_link_libraries(helloworld pthread)
 # add_test(hellotest helloworld)

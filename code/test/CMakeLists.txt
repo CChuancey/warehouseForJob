@@ -1,5 +1,4 @@
-include(CTest)
-find_program(MEMORYCHECK_COMMAND valgrind)
+
 add_executable(testsForCode src/main.cpp)
 
 add_test(tester testsForCode)
