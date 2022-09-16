@@ -65,6 +65,17 @@ Checks: >
 # camelBack（小驼峰命名法）
 # lower_case（小写命名法）
 
+# 命名规范记录
+# 1. 命名空间namespcase:lower_space
+# 2. class/struct的名称：CamelCase
+# 3. template参数:CamelCase
+# 4. 普通变量：camelBack
+# 5. class成员变量: 带有m前缀的CamleCase，例如 int mValue;
+# 6. 函数/方法：camelBack
+# 7. 宏定义: UPPER_CASE
+# 8. 枚举/常量/constexpr/static常量：带有k前缀的CamelCase,例如 enum{ kFirst,kSecon}
+# 9. 
+
 CheckOptions:
   - { key: readability-identifier-naming.NamespaceCase,          value: lower_case }
   - { key: readability-identifier-naming.ClassCase,              value: CamelCase  }
