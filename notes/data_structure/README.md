@@ -283,3 +283,24 @@ public:
 };
 ```
 
+### 30 二分模板
+
+1. `r = mid`的情况
+
+```C++
+while(l<r){
+    int mid = (l + r) >> 1;
+    if(check) r = mid;
+    else l = mid + 1; 
+}
+```
+
+2. `l = mid`的情况
+
+```C++
+while(l<r){
+    int mid = (l + r + 1) >> 1;
+    if(check) l = mid;
+    else r = mid - 1;
+}
+```
