@@ -1,8 +1,11 @@
+#include <algorithm>
 #include <chrono>
 #include <cstdint>
 #include <functional>
 #include <iostream>
+#include <stdexcept>
 #include <thread>
+#include <vector>
 
 struct MyStruct {
     MyStruct(int& _m) : m(_m) {}
@@ -91,6 +94,12 @@ void testBindAndRef() {
     // std::ref和普通的引用不同
     auto fun = std::bind(testFun, a, d, std::ref(c));
     fun();
+    // thread 的传参如果函数需要引用，需要传入引用
+    auto threadFun = [](int aa, int& bb, int&& cc) {
+        std::cout << aa << " " << bb << " " << cc << std::endl;
+    };
+    std::thread testThread(threadFun, a, std::ref(b), std::move(c));
+    testThread.join();
     std::cout << "after testFunc" << a << " " << b << " " << c << std::endl;
 }
 
@@ -124,6 +133,25 @@ public:
     Tmp(const Tmp&&) noexcept;
     // 移动赋值运算符拷贝
     Tmp& operator=(const Tmp&& oth) noexcept;
+};
+
+// 确保线程结束前完成join的操作
+class ScopedThread {
+public:
+    ScopedThread(std::thread t) : mThread(std::move(t)) {
+        if (!mThread.joinable()) {
+            throw std::logic_error("No Thread");
+        }
+    }
+
+    ~ScopedThread() { mThread.join(); }
+
+    // 禁止拷贝和赋值
+    ScopedThread(const ScopedThread&) = delete;
+    ScopedThread& operator=(const ScopedThread&) = delete;
+
+private:
+    std::thread mThread;
 };
 
 int main(int argc, char** argv) {
@@ -184,5 +212,58 @@ int main(int argc, char** argv) {
     // 2. 成员函数的参数
     testMemberFuncFun();
     // auto test = new ThreadGuard(t4);
+
+    // 不能通过赋新值的方式让一个std::thread对象“丢弃”一个线程
+    // {
+    //     auto someFunction = [] {};
+    //     auto someOtherFunction = [] {};
+    //     std::thread t1(someFunction);         // 1
+    //     std::thread t2 = std::move(t1);       // 2
+    //     t1 = std::thread(someOtherFunction);  // 3
+    //     std::thread t3;                       // 4
+    //     t3 = std::move(t2);                   // 5
+    //     // t1 = std::move(t3);  // 6 赋值操作将使程序崩溃
+    // }
+
+    // 确保线程结束前完成join的操作
+    {
+        auto fun = [] {};
+        ScopedThread thread(std::move(std::thread(fun)));
+    }
+
+    // 创建一组线程进行管理
+    {
+        auto work = [](int i) {
+            std::cout << "Thread " << i << " is working!" << std::endl;
+        };
+        std::vector<std::thread> threads;
+        const int placeholder = 20;
+        for (int i; i < placeholder; i++) {
+            threads.emplace_back(work, i);
+        }
+
+        for (auto& t : threads) {
+            t.join();
+        }
+    }
+
+    // 线程数量
+    {
+        // 多核系统中返回值为CPU核心数量，如果无法获取返回0
+        auto num = std::thread::hardware_concurrency();
+        std::cout << "CPU core num :" << num << std::endl;
+    }
+
+    // 线程id
+    {
+        // 1. 通过std::this_thread::get_id()
+        std::thread t(
+            [] { std::cout << std::this_thread::get_id() << std::endl; });
+
+        // 2. 通过thread对象的成员函数
+        std::cout << t.get_id() << std::endl;
+        t.join();
+    }
+
     return 0;
 }
