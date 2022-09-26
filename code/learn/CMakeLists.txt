@@ -5,11 +5,14 @@ target_link_libraries(helloworld pthread)
 add_executable(copycontrol src/copycontrol.cpp)
 add_test(copycontroltest copycontrol)
 
+add_executable(shareddata src/shareddata.cpp)
+add_test(shareddatatest shareddata)
+
 add_executable(ste src/main.cpp)
 
 # 在生成exe后执行内存检查
 add_custom_command(
-  TARGET copycontrol
+  TARGET shareddata
   POST_BUILD
   COMMAND ${CMAKE_CTEST_COMMAND} --force-new-ctest-process --test-action
           memcheck --track-origins=yes
@@ -17,3 +20,4 @@ add_custom_command(
   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
 
 set_target_properties(helloworld PROPERTIES CXX_STANDARD 17)
+set_target_properties(shareddata PROPERTIES CXX_STANDARD 17)
