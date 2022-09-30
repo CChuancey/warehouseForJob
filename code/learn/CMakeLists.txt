@@ -8,11 +8,14 @@ add_test(copycontroltest copycontrol)
 add_executable(shareddata src/shareddata.cpp)
 add_test(shareddatatest shareddata)
 
+add_executable(sync src/threadsynchronization.cpp)
+add_test(synctest sync)
+
 add_executable(ste src/main.cpp)
 
 # 在生成exe后执行内存检查
 add_custom_command(
-  TARGET shareddata
+  TARGET sync
   POST_BUILD
   COMMAND ${CMAKE_CTEST_COMMAND} --force-new-ctest-process --test-action
           memcheck --track-origins=yes
