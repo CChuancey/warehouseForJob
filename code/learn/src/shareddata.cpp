@@ -127,10 +127,12 @@ void safeSwap(Sth& a, Sth& b) {
      *时不会对mutex再加一层锁）
      *
      */
-    std::lock(a.mMutex, b.mValue);
-    std::lock_guard<std::mutex> lockGuard1(a.mMutex, std::adopt_lock);
-    std::lock_guard<std::mutex> lockGuard2(b.mMutex, std::adopt_lock);
-    swap(a, b);
+    // {
+    //     std::lock(a.mMutex, b.mValue);
+    //     std::lock_guard<std::mutex> lockGuard1(a.mMutex, std::adopt_lock);
+    //     std::lock_guard<std::mutex> lockGuard2(b.mMutex, std::adopt_lock);
+    //     swap(a, b);
+    // }
 
     /**
      * @brief C++17写法
@@ -138,8 +140,10 @@ void safeSwap(Sth& a, Sth& b) {
      * std::scoped_lock<std::mutex,std::mutex> lock(...)
      *
      */
-    std::scoped_lock lock(a.mMutex, b.mMutex);
-    swap(a, b);
+    // {
+    //     std::scoped_lock lock(a.mMutex, b.mMutex);
+    //     swap(a, b);
+    // }
 }
 
 /*************************************************************************************/
