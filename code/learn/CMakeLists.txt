@@ -9,6 +9,7 @@ add_executable(shareddata src/shareddata.cpp)
 add_test(shareddatatest shareddata)
 
 add_executable(sync src/threadsynchronization.cpp)
+target_link_libraries(sync pthread)
 add_test(synctest sync)
 
 add_executable(ste src/main.cpp)
