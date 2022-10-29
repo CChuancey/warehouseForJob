@@ -8,12 +8,17 @@
 #include <cstdlib>
 
 static volatile int token = 0;
+const int kTokenLimit = 100;
+
 void sighandler(int s) {
     if (s != SIGALRM) {
         return;
     }
     alarm(1);
     token++;
+    if (token > kTokenLimit) {
+        token = kTokenLimit;
+    }
 }
 
 // 考虑信号影响的读写调用
