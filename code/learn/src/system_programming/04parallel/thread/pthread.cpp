@@ -24,7 +24,7 @@ void* routine(void* arg) {
     pthread_cleanup_pop(0);
     pthread_cleanup_pop(1);
 
-    pthread_exit(nullptr);
+    pthread_exit(arg);
     return arg;
 }
 
@@ -32,14 +32,17 @@ int main() {
     puts("Begin");
 
     pthread_t tid;
+    int* data = new int(1);
     // 返回值并不是线程的id
-    int ret = pthread_create(&tid, nullptr, routine, nullptr);
+    int ret = pthread_create(&tid, nullptr, routine, data);
     if (ret < 0) {
         fprintf(stderr, "error:%s\n", strerror(ret));
         exit(EXIT_FAILURE);
     }
     // 不join可能routine并没有被调度到就结束了程序，就没有routine线程的事了，原因是return时会回收当前进程的资源（包括routine线程的资源）！！！
-    pthread_join(tid, nullptr);
+    int* a = nullptr;
+    pthread_join(tid, reinterpret_cast<void**>(&a));
+    delete a;
     // pthread_detach(tid);
 
     puts("End!");
