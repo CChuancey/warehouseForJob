@@ -17,3 +17,6 @@ add_executable(slowcat3 04parallel/signal/slowcat3.cpp)
 add_executable(signal2 04parallel/signal/signal2.cpp)
 add_executable(signal3 04parallel/signal/signal3.cpp)
 add_executable(realtime 04parallel/signal/realtime.cpp)
+
+add_executable(thread 04parallel/thread/pthread.cpp)
+target_link_libraries(thread pthread)
