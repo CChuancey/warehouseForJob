@@ -20,3 +20,5 @@ add_executable(realtime 04parallel/signal/realtime.cpp)
 
 add_executable(thread 04parallel/thread/pthread.cpp)
 target_link_libraries(thread pthread)
+add_executable(add 04parallel/thread/add.cpp)
+target_link_libraries(add pthread)
