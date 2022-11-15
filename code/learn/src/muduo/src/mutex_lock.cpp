@@ -2,8 +2,20 @@
 
 #include <pthread.h>
 
-MutexLock::MutexLock(pthread_mutex_t& mutex) : mMutex(mutex) {}
+#include <cstdio>
+#include <cstring>
+#include <exception>
 
-void MutexLock::lock() {}
+MutexLock::MutexLock() {
+    int err = pthread_mutex_init(&mMutex, nullptr);
+    if (err) {
+        fprintf(stderr, "pthread_mutex_init():%s\n", strerror(err));
+        std::terminate();
+    }
+}
 
-void MutexLock::unlock() {}
+MutexLock::~MutexLock() { pthread_mutex_destroy(&mMutex); }
+
+void MutexLock::lock() { pthread_mutex_lock(&mMutex); }
+
+void MutexLock::unlock() { pthread_mutex_unlock(&mMutex); }
